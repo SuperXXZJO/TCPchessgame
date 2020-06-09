@@ -15,7 +15,7 @@ func main() {
 
 // 启动服务器
 func Start() {
-	listener, err := net.Listen("tcp", "59.110.23.117:9090")
+	listener, err := net.Listen("tcp", "127.0.0.1:8080")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -39,7 +39,7 @@ func Start() {
 
 		// 把每个客户端连接扔进连接池
 		conns[conn.RemoteAddr().String()] = conn
-		fmt.Println(conns)
+		//fmt.Println(conns)
 
 		// 处理消息
 		go Handler(conn, &conns, messageChan)
@@ -52,7 +52,7 @@ func BroadMessages(conns *map[string]net.Conn, messages chan string) {
 
 		// 不断从通道里读取消息
 		msg := <-messages
-
+		fmt.Println(msg)
 		lens := strings.Count(msg, "")
 		if lens == 4 {
 			msg = Board[0][0] + Board[0][1] + Board[0][2] + Board[0][3] + Board[0][4] + "\n" + Board[1][0] + Board[1][1] + Board[1][2] + Board[1][3] + Board[1][4] + "\n" + Board[2][0] + Board[2][1] + Board[2][2] + Board[2][3] + Board[2][4] + "\n" + Board[3][0] + Board[3][1] + Board[3][2] + Board[3][3] + Board[3][4] + "\n" + Board[4][0] + Board[4][1] + Board[4][2] + Board[4][3] + Board[4][4] + "\n"
@@ -62,8 +62,8 @@ func BroadMessages(conns *map[string]net.Conn, messages chan string) {
 
 		// 向所有的乡亲们发消息
 		for key, conn := range *conns {
-			fmt.Println("connection is connected from ", key)
-			fmt.Println(msg)
+			//fmt.Println("connection is connected from ", key)
+			//fmt.Println(msg)
 			_, err := conn.Write([]byte(msg))
 			if err != nil {
 				log.Printf("broad message to %s failed: %v\n", key, err)
@@ -75,7 +75,7 @@ func BroadMessages(conns *map[string]net.Conn, messages chan string) {
 
 // 处理客户端发到服务端的消息，将其扔到通道中
 func Handler(conn net.Conn, conns *map[string]net.Conn, messages chan string) {
-	fmt.Println("connect from client ", conn.RemoteAddr().String())
+	//fmt.Println("connect from client ", conn.RemoteAddr().String())
 
 	buf := make([]byte, 1024)
 	for {
@@ -89,7 +89,10 @@ func Handler(conn net.Conn, conns *map[string]net.Conn, messages chan string) {
 
 		// 把收到的消息写到通道中
 		recvStr := string(buf[0:length])
-		res := strings.Split(recvStr, ",")
+		//fmt.Println("debug:", recvStr)
+		res0 := strings.Split(recvStr, ":")
+		//fmt.Println(res0[2])
+		res := strings.Split(res0[2], ",")
 		zb, winner := chess(res)
 		if winner != " " && winner != "0" {
 			msg := winner
